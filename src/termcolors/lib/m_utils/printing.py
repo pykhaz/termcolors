@@ -30,7 +30,8 @@ AWTH = "\033[37m"
 # AGRY = "\033[251m"
 # AGRY = "\033[38;2;150;150;150m"\x1b[48;2;76;86;106m
 AGRY = "\x1b[38;2;76;86;106m"  # ← nord
-AGRYBG = "\033[48;2;100;100;100m"
+# AGRYBG = "\033[48;2;100;100;100m"
+AGRYBG = "\x1b[48;2;76;86;106m"  # ← nord
 
 # - cursor moves:
 AERSLIN = "\033[1A\033[2K"  # moves up, erease line

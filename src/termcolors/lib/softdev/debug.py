@@ -38,8 +38,8 @@ def cprintd(message, opening="DBG:", location="", tabs_nr: int = 0, end="\n"):
     # opening_color = "red" if any(info in opening for info in ("DBG", "ERR"))\
     #     else "blue"
     dbg_message += f"{ABLD + AITL + AGRYBG + AYEL}{opening}{ARST}"
-    dbg_message += f" {AGRN}{message}{ARST}"
+    dbg_message += f" {ADWT}{message}{ARST}"
     if location:
-        dbg_message += f" {AITL + ALBL}[{location}]{ARST}"
+        dbg_message += f" {AITL + AGRY}[{location}]{ARST}"
 
     print(dbg_message, end=end)

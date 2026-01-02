@@ -81,9 +81,9 @@ def quit() -> None:
     del_lines(source="quit") if not STATE['parser'].parse_args().file else None
     # del_lines(source="quit")
     print("quiting...")
-    # cprintd(f"{STATE['del_lines_called'] = }",
-    #         location=f"{APPNAME}::{FTITLE}.quit")
-    # cprintd(f"{STATE['log'] = }", location=f"{APPNAME}::{FTITLE}.quit")
+    cprintd(f"{STATE['del_lines_called'] = }",
+            location=f"{APPNAME}::{FTITLE}.quit")
+    cprintd(f"{STATE['log'] = }", location=f"{APPNAME}::{FTITLE}.quit")
     sysexit(0)
 
 
