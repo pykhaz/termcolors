@@ -20,6 +20,7 @@ FTITLE = __file__.split("/", maxsplit=-1)[-1].split(".", maxsplit=-1)[0]
 
 STATE = {'color': "", 'ansi_code': "", 'rgb': tuple(), 'hexa': "",
          'new': False, 'lines_to_del': 1, 'after_help': False,
+         'palette': (False, ""),
          'del_lines_called': [], 'log': [],
          'parser': None}
 HELP_LINES = 11  # 9
@@ -150,22 +151,43 @@ def ask_for_color() -> str:
 def palette() -> None:
     """ Generate a named (predefined) palette """
 
+    loc = f"{APPNAME}::{FTITLE}.palette"
     palettes = list_palettes()
     # cprintd(f"{palettes = }", location=f"{APPNAME}::{FTITLE}.palette")
     # palette = get_input("Enter a palette name", choices=palettes)
     # palette = Path(PALETTE_FOLDER) / palette
-    for i, palette in enumerate(palettes):
-        print(f"{i + 1}. {palette!r} {palettes[palette]}")
-    palette_name = get_input("Enter a palette name", choices=palettes)
+    cnt = 0
+    lines = []
+    line = ""
+    for i, palette in enumerate(sorted(palettes)):
+        if len(line + f"{palette!r} | ") < 79:
+            line += f"{palette!r} | "
+            continue
+        else:
+            cnt += 1
+            line = line[:-3]
+            lines.append(line)
+            line = f"{palette!r} | "
+            continue
+    cnt += 1
+    # cprintd(f"appending {line = }", location=loc)
+    line = line[:-3]
+    lines.append(line)
+    print(*lines, sep="\n")
+    # cprintd(f"{i = } / {len(palettes) = } / {cnt = }", location=loc)
+    palette_name = get_input("Enter a palette name", choices=palettes,
+                             show_choices=False)
     log(f"setting STATE['lines_to_del'] to {i + 2}", "palette")
-    STATE['lines_to_del'] = i + 3
+    STATE['lines_to_del'] = cnt + 2
     log(f"about to delete {STATE['lines_to_del']} lines", "palette")
     del_lines("palette")
     # cprintd(f"{palette_name = }, {palettes[palette_name] = }, "
     #         f"{palettes[palette_name].exists() = }, "
     #         f"{type(palettes[palette_name]) = }",
     #         location=f"{APPNAME}::{FTITLE}.palette")
+    print(f"palette: {palette_name}")
     batch_conversion(palettes[palette_name], once=False)
+    STATE['palette'] = (True, palette_name)
 
 
 def print_colored_line(nr_chars: int = 10,
@@ -218,6 +240,7 @@ def num_to_ansi() -> None:
         STATE['new'] = True
     except Exception as e:
         cprint(f"{ARED}error: {e}{ARST}")
+        STATE['lines_to_del'] = 3
         # continue
         return
     # print_coloured_line(ansi_code, 20)
@@ -241,7 +264,8 @@ def read_colors_file(filename: str) -> List[Dict]:
     colors = []
     # cprintd(f"the file to open: {filename}",
     #         location=f"{APPNAME}::{FTITLE}.read_colors_file")
-    filepath = ROOTPATH / filename
+    filepath = Path(filename)
+    filepath = ROOTPATH / filename if not filepath.exists() else filepath
     # cprintd(f"the path to open: {filepath}",
     #         location=f"{APPNAME}::{FTITLE}.read_colors_file")
     cnt = 0  # for netto lines nr
@@ -277,6 +301,7 @@ def batch_conversion(filename: str | Path | None = None,
                      once: bool = True) -> None:
     """ Generating colors/ANSI codes from a .ssv file """
 
+    loc = f"{APPNAME}::{FTITLE}.batch_conversion"
     filename = filename if filename is not None else\
             STATE['parser'].parse_args().file
     colors = read_colors_file(filename)

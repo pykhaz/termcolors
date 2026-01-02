@@ -6,6 +6,7 @@ cprint = print
 def get_input(prompt: str = "Input", mark: str = ">",
               default: str | None = None,
               choices: list[str] | None = None,
+              show_choices: bool = True,
               # 'pass_exc': False,
               # nl: str = "") -> str:
               **kwargs) -> str | None:
@@ -16,6 +17,8 @@ def get_input(prompt: str = "Input", mark: str = ">",
             mark (str, optional): Mark to display. Defaults to "> ".
             default (str, optional): Default value. Defaults to "".
             choices (list[str], optional): List of choices. Defaults to None.
+            show_choices (bool, optional): If choices are to be displayed.
+                Defaults to True.
             pass_exc (bool, optional): If Exception are to be reraised.
             nl (str, optional): Newline character. Defaults to "\n".
     """
@@ -33,7 +36,11 @@ def get_input(prompt: str = "Input", mark: str = ">",
     if choices is not None:
         assert default in choices or default is None, \
             f"Default value {default!r} not in choices"
-        prompt = f"{prompt} {tuple(choices)} {default_str}{mark} "
+        if show_choices:
+            choices_txt = f" {tuple(choices)} "
+        else:
+            choices_txt = ""
+        prompt = f"{prompt}{choices_txt}{default_str}{mark} "
     else:
         prompt = f"{prompt} {default_str}{mark} "
     condition = ans not in choices if choices is not None else True
