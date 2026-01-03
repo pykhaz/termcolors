@@ -1,15 +1,16 @@
 import argparse
+from sys import argv
 from datetime import datetime
+from functools import partial
 from pathlib import Path
 from sys import exit as sysexit
 from typing import List, Dict
 
 import pyperclip
 
-from .lib.m_utils.printing import (ARED, ARST,
-                                   num_to_fg_ansi,  num_to_bg_ansi,
+from .lib.m_utils.printing import (AORG, ARED, ARST, num_to_bg_ansi,
                                    term_del_line)
-from .lib.palette import PALETTE_FOLDER, list_palettes
+from .lib.palette import list_palettes
 from .lib.softdev.user_input import get_input
 from .lib.softdev.debug import RangeError, cprintd
 
@@ -21,10 +22,23 @@ FTITLE = __file__.split("/", maxsplit=-1)[-1].split(".", maxsplit=-1)[0]
 STATE = {'color': "", 'ansi_code': "", 'rgb': tuple(), 'hexa': "",
          'new': False, 'lines_to_del': 1, 'after_help': False,
          'palette': (False, ""),
-         'del_lines_called': [], 'log': [],
+         'del_lines_called': [],
+         'end': True, 'log': [], 'cprintd': cprintd,
          'parser': None}
+QUITCONT = {
+        "quit": "__QUIT__",
+        "continue": "__CONTINUE__",
+        "shutdown": "__SHUTDOWN__"
+        }
 HELP_LINES = 11  # 9
 COPYCOMMAND = ["fg", "bg"]
+if "-d" in argv or "--dev" in argv:
+    cprintd = partial(STATE['cprintd'], dbg=True)
+    term_del_line = lambda *args, **kwargs: None
+else:
+    cprintd = partial(STATE['cprintd'], dbg=False)
+# !TST:
+# term_del_line = lambda *args, **kwargs: None
 
 cprint = print
 
@@ -52,7 +66,6 @@ def range_check(value: int | float) -> int:
 
 
 def color_hex_to_rgb(color: str) -> tuple:
-    # cprintd(f"{color = }", location=f"{APPNAME}::{FTITLE}.color_hex_to_rgb")
     return tuple(int(color.lstrip("#")[i:i + 2], 16) for i in (0, 2, 4))
 
 
@@ -78,23 +91,29 @@ def change_method(shortcut: str) -> None:
     del_lines("change_method")
 
 
-def quit() -> None:
+# def quit(command: str = "") -> str | None:
+def quit() -> str | None:
+    loc = f"{APPNAME}::{FTITLE}.quit"  # !DBG
     del_lines(source="quit") if not STATE['parser'].parse_args().file else None
     # del_lines(source="quit")
-    print("quiting...")
-    # cprintd(f"{STATE['del_lines_called'] = }",
+    # cprintd(f"returning {QUITCONT['quit']}", location=loc)
+    print("quitting...")
+    # cprintd(f"{STATE['log'] = }, `return('__QUIT__')`",
     #         location=f"{APPNAME}::{FTITLE}.quit")
-    # cprintd(f"{STATE['log'] = }", location=f"{APPNAME}::{FTITLE}.quit")
-    sysexit(0)
+    # if command == QUITCONT["quit"]:
+        # sysexit(0)
+    return QUITCONT["quit"]
 
 
-COMMANDS = {'decm':    lambda: change_method('decm'),
-            'hexa':    lambda: change_method('hexa'),
-            'prct':    lambda: change_method('prct'),
-            'help':    lambda: usage(quit=False),
-            'palette': lambda: palette(),
-            'quit':    lambda: quit(),
-            'q':       lambda: quit()}
+COMMANDS = {
+        'decm':    lambda: change_method('decm'),
+        'hexa':    lambda: change_method('hexa'),
+        'prct':    lambda: change_method('prct'),
+        'help':    lambda: usage(quit=False),
+        'palette': lambda: palette(),
+        'quit':    lambda: quit(),
+        'q':       lambda: quit()
+        }
 
 NAMES = {'decm': {'method': "decimal",
                   'desc': "sets conversion from decimal format"},
@@ -104,10 +123,12 @@ NAMES = {'decm': {'method': "decimal",
                   'desc': "sets conversion from percentage format"},
          'help': {'method': "", 'desc': "prints this message"},
          'palette': {'method': "", 'desc': "generates a named palette"},
-         'quit': {'method': "", 'desc': "quits the application"}}
+         'quit': {'method': "", 'desc': "exits the application"}}
 
 
 def ask_for_color() -> str:
+
+    loc = f"{APPNAME}::{FTITLE}.ask_for_color"  # !DBG
     method = METHOD['current']
     ans = get_input(f"Enter a colour code (R;G;B, {NAMES[method]['method']})"
                     ", command or help")
@@ -121,29 +142,27 @@ def ask_for_color() -> str:
         r, g, b = map(CONVERSIONS[method], ans.split(";"))
         color = f"#{r:02x}{g:02x}{b:02x}"
 
-        # del_lines("ask_for_color")
-
     except ValueError as e:
         if ans == "":
-            quit()
+            print(f"{AORG}No input given, quitting...{ARST}")
+            return QUITCONT['quit']
 
         cprint(f"{ARED}ERROR: unrecognized value/command {ans!r} - "
-               "use 'help' for help{ARST}")
-        return ""
+               f"use 'help' for help{ARST}")
+        return "__CONTINUE__"
     except RangeError as e:
         cprint("ERROR: " + e.args[0])
         STATE['color'] = ""
         STATE['ansi_code'] = ""
     except AttributeError:
-        # cprint("…aborting…")
-        # cprintd(f"{STATE['del_lines_called'] = }",
-        #         location=FTITLE + ".ask_for_color (AttributeInterrupt)")
-        sysexit(1)
+        # sysexit(1)
+        return QUITCONT['shutdown']
     except KeyboardInterrupt:
-        cprint("…aborting… (KeyboardInterrupt)")
-        cprintd(f"{STATE['del_lines_called'] = }",
-                location=FTITLE + ".ask_for_color (KeyboardInterrupt)")
-        sysexit(1)
+        cprint("...aborting... (KeyboardInterrupt)")
+        # cprintd(f"{STATE['del_lines_called'] = }",
+        #         location=FTITLE + ".ask_for_color (KeyboardInterrupt)")
+        # sysexit(1)
+        return QUITCONT['shutdown']
 
     return color
 
@@ -151,11 +170,8 @@ def ask_for_color() -> str:
 def palette() -> None:
     """ Generate a named (predefined) palette """
 
-    loc = f"{APPNAME}::{FTITLE}.palette"
+    loc = f"{APPNAME}::{FTITLE}.palette"  # !DBG
     palettes = list_palettes()
-    # cprintd(f"{palettes = }", location=f"{APPNAME}::{FTITLE}.palette")
-    # palette = get_input("Enter a palette name", choices=palettes)
-    # palette = Path(PALETTE_FOLDER) / palette
     cnt = 0
     lines = []
     line = ""
@@ -170,21 +186,15 @@ def palette() -> None:
             line = f"{palette!r} | "
             continue
     cnt += 1
-    # cprintd(f"appending {line = }", location=loc)
     line = line[:-3]
     lines.append(line)
     print(*lines, sep="\n")
-    # cprintd(f"{i = } / {len(palettes) = } / {cnt = }", location=loc)
     palette_name = get_input("Enter a palette name", choices=palettes,
                              show_choices=False)
     log(f"setting STATE['lines_to_del'] to {i + 2}", "palette")
     STATE['lines_to_del'] = cnt + 2
     log(f"about to delete {STATE['lines_to_del']} lines", "palette")
     del_lines("palette")
-    # cprintd(f"{palette_name = }, {palettes[palette_name] = }, "
-    #         f"{palettes[palette_name].exists() = }, "
-    #         f"{type(palettes[palette_name]) = }",
-    #         location=f"{APPNAME}::{FTITLE}.palette")
     print(f"palette: {palette_name}")
     batch_conversion(palettes[palette_name], once=False)
     STATE['palette'] = (True, palette_name)
@@ -199,60 +209,60 @@ def print_colored_line(nr_chars: int = 10,
     rgb = color_hex_to_rgb(hexa) if hexa else STATE['rgb']
     print(ansi, end="")
     print(" " * nr_chars, ARST, end="")
-    # description next to the line:
+    # !INF: description next to the line:
     STATE['hexa'] = STATE['color']
     print(f" ← {hexa} = {str(rgb):<15} = "
           f"{ansi!r:<25} {ending}")
-    STATE['hexa'] = ""
-    STATE['color'] = ""
 
 
-def num_to_ansi() -> None:
+def num_to_ansi() -> str | None:
     """ Transforms a color (R;G;B) into ansi code """
 
-    # if STATE['ansi_code'] != "" and not recurrent:
+    loc = f"{APPNAME}::{FTITLE}.num_to_ansi"  # !DBG
     if STATE['ansi_code'] != "" and STATE['new']:
         print_colored_line(20)
         STATE['new'] = False
 
-    # term_del_line(STATE['lines_to_del'])
     color = ask_for_color()
 
-    # if the input was a command:
-    if color.lower() in COMMANDS:
-        COMMANDS[color.lower()]()
-        # print(AYLW, end="")  # !DBG -- turning line into yellow
-        # continue
-        return
+    if color in QUITCONT.values():
+        # cprintd(f"{color = } in QUITCONT", location=loc)
+        return color
 
-    # if the input was a copy command:
+    # !INF: if the input was a command:
+    if color.lower() in COMMANDS:
+        result = COMMANDS[color.lower()]()
+        return result
+
+    # !INF: if the input was a copy command:
     if color.lower() in COPYCOMMAND:
         copy_color(color)
-        sysexit(0)
+        return
 
     del_lines(source="(trying_num_to_ansi)")
     STATE['color'] = color
 
+    rgb_ = tuple()
     try:
-        ansi_code, *rgb_ = num_to_bg_ansi(color, with_rgb_dec=True)
-        # cprintd(f"{ansi_code = }, {rgb_ = }",
-                  # location=FTITLE + "::trying_num_to_ansi")
+        ansi_code, *rgb_ = num_to_bg_ansi(STATE['color'], with_rgb_dec=True)
+
+        STATE['color'] = color
+        STATE['ansi_code'] = ansi_code
         STATE['new'] = True
     except Exception as e:
-        cprint(f"{ARED}error: {e}{ARST}")
+        if STATE['color'] == "":  # !INF: if the input was empty → quit
+            return "__QUIT__"
+        cprint(f"{ARED}error → {e}{ARST}")
         STATE['lines_to_del'] = 3
-        # continue
-        return
-    # print_coloured_line(ansi_code, 20)
-    STATE['ansi_code'] = ansi_code
+
+        if color in COPYCOMMAND:
+            STATE['new'] = True
     STATE['rgb'] = rgb_[0] if rgb_ else tuple()
 
 
 def parse_color_value(value: str, fmt: str):
     """Konwertuje wartość koloru zależnie od formatu"""
 
-    # cprintd(f"parsing {value = }, with {fmt = }",
-    #         location=f"{APPNAME}::{FTITLE}.parse_color_value")
     if fmt in CONVERSIONS:
         return CONVERSIONS[fmt](value)
     else:
@@ -262,13 +272,9 @@ def parse_color_value(value: str, fmt: str):
 def read_colors_file(filename: str) -> List[Dict]:
 
     colors = []
-    # cprintd(f"the file to open: {filename}",
-    #         location=f"{APPNAME}::{FTITLE}.read_colors_file")
     filepath = Path(filename)
     filepath = ROOTPATH / filename if not filepath.exists() else filepath
-    # cprintd(f"the path to open: {filepath}",
-    #         location=f"{APPNAME}::{FTITLE}.read_colors_file")
-    cnt = 0  # for netto lines nr
+    cnt = 0  # !INF: for netto lines nr
     with open(filepath, "r") as fin:
         for line_no, line in enumerate(fin, start=1):
             line = line.strip()
@@ -284,49 +290,45 @@ def read_colors_file(filename: str) -> List[Dict]:
                 g = parse_color_value(g_s, fmt)
                 b = parse_color_value(b_s, fmt)
                 x = f"#{r:02x}{g:02x}{b:02x}"
-                # cprintd(f"{line_no = }",
-                #         location=f"{APPNAME}::{FTITLE}.read_colors_file")
                 cnt += 1
-            except (ValueError, RangeError) as e:
-                # print(f"Error on line {line_no}: {e} "
-                #       f"[{APPNAME}::{FTITLE}.read_colors_file]")
+            except (ValueError, RangeError):
                 continue
             colors.append({"r": r, "g": g, "b": b, "x": x, "format": fmt})
-    # cprintd(f"{filename = }, net {cnt = }, {len(colors) = }",
-    #         location=f"{APPNAME}::{FTITLE}.read_colors_file")
     return colors
 
 
 def batch_conversion(filename: str | Path | None = None,
-                     once: bool = True) -> None:
+                     once: bool = False) -> str | None:
     """ Generating colors/ANSI codes from a .ssv file """
 
-    loc = f"{APPNAME}::{FTITLE}.batch_conversion"
+    loc = f"{APPNAME}::{FTITLE}.batch_conversion"  # !DBG
     filename = filename if filename is not None else\
             STATE['parser'].parse_args().file
     colors = read_colors_file(filename)
-    # cprintd(f"{STATE['parser'].parse_args().file = }, {len(colors) = }",
-    #         location=f"{APPNAME}::{FTITLE}.batch_conversion")
-    # del_lines("batch_conversion")
     colors_nr = len(colors)
     for i, color in enumerate(colors):
-        # print(f"{i}. {color = } ({type(color) = })")
         ending = "\u2502"
         if i == 0:
-            ending = "↓"  # ↑ 	→ 	↓
+            ending = "↓"
         elif i == colors_nr - 1:
             ending = f"↑ ({colors_nr})"
         ansi = num_to_bg_ansi(color["x"])
         print_colored_line(20, ansi, hexa=color["x"], ending=ending)
 
     if once:
-        quit()
+        return QUITCONT["quit"]
+    return QUITCONT["continue"]
 
 
 def copy_color(fbg: str) -> None:
-    """ Copying the bg/fg colour to clipboard """
+    """ Copying the bg/fg colour to clipboard
 
-    if STATE['color'] == "":
+        Args:
+            fbg (str): foreground or background, 'fg' or 'bg'
+    """
+
+    loc = f"{APPNAME}::{FTITLE}.copy_color"  # !DBG
+    if STATE['ansi_code'] == "":
         cprint(f"{ARED}no color to copy{ARST}")
         sysexit(0)
 
@@ -340,17 +342,17 @@ def copy_color(fbg: str) -> None:
 
 
 def usage(quit: bool = False) -> None:
-    print(f"USAGE: python {APPNAME} [-h | --help]")
     print("Input color as 3 hex numbers, separated by semicolon, "
           "when prompted,")
     print("e.g. 'ff;00;00' for red.")
-    print("Commands:")
+    print("Commands in the interactive mode:")
     print(f"    - {'/'.join(COPYCOMMAND)} to copy the current "
           "color to the clipboard \n      (ANSI foreground/background, "
           "respectively).")
     for key, value in NAMES.items():
         print(f"    - {key}: {value['desc']}")
-    sysexit(0) if quit else None
+    if quit and STATE['end']:
+        sysexit(0)
     STATE['after_help'] = True
 
 
@@ -360,8 +362,8 @@ def log(message: str, source: str = "main") -> None:
 
 
 
-def main() -> int:
-    loc = f"{APPNAME}::cli.main"
+def main() -> int | dict:
+    loc = f"{APPNAME}::cli.main"  # !DBG
 
     parser = argparse.ArgumentParser(
         prog=APPNAME,
@@ -377,6 +379,8 @@ def main() -> int:
                         type=str,
                         help="file to process in batch mode"
                         )
+    parser.add_argument("-d", "--dev", action="store_true",
+                        help="development mode")
     parser.add_argument("-v", "--version", action="store_true",
                         help="prints application version")
     parser.add_argument("-h", "--help", action="store_true",
@@ -389,45 +393,25 @@ def main() -> int:
             else " -- interactive mode"
     if args.help:
         parser.print_help()
-        usage(quit=True)
+        # usage(quit=True)
+        return 0
     if args.version:
         print(f"{APPNAME} v. {VERSION}")
         sysexit(0)
     print(f"{APPNAME} v. {VERSION}{mode}")
     if args.file:
-        batch_conversion()
+        result = batch_conversion()
+        if result == QUITCONT['quit']:
+            return 0
 
-    # comemented:
-    # if "-h" in argv or "--help" in argv:
-    #     usage(quit=True)
-
-    # if "-b" in argv or "--batch" in argv:
-    #     batch_conversion()
-
-    # cprintd("debug message try…", location=loc)
-    #
-    # print()
-    # cprintd("Trying num_to_bg_ansi…", location=loc)
-    # clolor = "#FF0000"
-    # code = num_to_fg_ansi(clolor)
-    # print(f"{clolor} → {code}{code!r}{ARST}")
-    #
-    # print()
-    # cprintd("Trying get_input…", location=loc)
-    # ans = get_input("get_input test ")
-    # cprint(f"{ans = }")
-    #
-    # print()
-    # cprintd("Trying ask_for_color…", location=loc)
-    # ans = ask_for_color()
-    # cprint(f"{ans = }")
-    #
-    # print()
-    # cprintd("Trying num_to_ansi…", location=loc)
-    # num_to_ansi()
-
-    # main loop:
+    i = 0
     while True:
-        num_to_ansi()
+        result = num_to_ansi()
+        # cprintd(f"{i}. {result = }", location=loc)
+        if result == QUITCONT['quit']:
+            break
+        elif result == QUITCONT['shutdown']:
+            return 1
+        i += 1
 
     return 0

@@ -1,7 +1,10 @@
 # Byte-compiled / optimized / DLL files
 __pycache__/
+archive/
 *.py[cod]
+tmp_*.py[cod]
 *$py.class
+tmp_*
 
 # system garbage
 .DS_Store

@@ -1,4 +1,5 @@
 import pytest
+
 from termcolors.lib.m_utils.printing import num_to_fg_ansi
 
 

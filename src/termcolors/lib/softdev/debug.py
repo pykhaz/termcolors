@@ -10,7 +10,8 @@ class RangeError(Exception):
     pass
 
 
-def cprintd(message, opening="DBG:", location="", tabs_nr: int = 0, end="\n"):
+def cprintd(message, opening="DBG:", location="", tabs_nr: int = 0, dbg=True,
+            end="\n"):
     """ Print debug message
 
         Args:
@@ -23,6 +24,8 @@ def cprintd(message, opening="DBG:", location="", tabs_nr: int = 0, end="\n"):
             None
     """
 
+    if not dbg:
+        return
     # if CN['console'] is None:
     #     CN['console'] = Console(file=file)
 
