@@ -1,5 +1,7 @@
 # from .lib.m_utils.printing import (ABLD, AGRY, AGRYBG, AITL, AORG, ARED,
 #                                    ARST, TAB)
+from sys import stderr
+
 from ..m_utils.printing import (ABLD, ADWT, AGRN, AGRY, AGRYBG, AITL, ALBL,
                                 AORG, ARED, ARST, ASAL, AYEL, TAB)
 # TAB_SPCS = 4
@@ -45,4 +47,4 @@ def cprintd(message, opening="DBG:", location="", tabs_nr: int = 0, dbg=True,
     if location:
         dbg_message += f" {AITL + AGRY}[{location}]{ARST}"
 
-    print(dbg_message, end=end)
+    print(dbg_message, file=stderr, end=end)
