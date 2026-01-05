@@ -1,5 +1,10 @@
 # termcolors
 
+[![CI](https://github.com/pykhaz/termcolors/actions/workflows/ci.yml/badge.svg)](https://github.com/pykhaz/termcolors/actions/workflows/ci.yml)
+[![Python Version](https://img.shields.io/badge/python-3.10%2C3.11-blue)](https://www.python.org/)
+[![License](https://img.shields.io/badge/license-MIT-green)](LICENSE.txt)
+
+
 Simple terminal colour chooser and ANSI code generator utility for Linux,
 written in Python.
 
