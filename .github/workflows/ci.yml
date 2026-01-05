@@ -28,6 +28,9 @@ jobs:
         if: runner.os == 'Linux'
         run: sudo apt-get update && sudo apt-get install -y xclip
 
+      - name: Install package for testing
+        run: pip install -e src/
+
       - name: Install Hatch
         run: python -m pip install --upgrade hatch
 
