@@ -336,9 +336,15 @@ def copy_color(fbg: str) -> None:
     if fbg.lower() == "fg":
         STATE['ansi_code'] = STATE['ansi_code'].replace("[48", "[38", 1)
         fgbg = "(foreground)"
-    pyperclip.copy(STATE['ansi_code'])
-    cprint(f"copying {STATE['rgb']} = {STATE['hexa']}: {STATE['ansi_code']!r}"
-           f" {fgbg}")
+    try:
+        pyperclip.copy(STATE['ansi_code'])
+        cprint(f"copying {STATE['rgb']} = {STATE['hexa']}: "
+               f"{STATE['ansi_code']!r} {fgbg}")
+    except pyperclip.PyperclipException as e:
+        err = f"error copying to clipboard: {e}"
+        cprint(f"{ARED}{err}{ARST}")
+        cprint(f"what should be copied: {STATE['rgb']} = {STATE['hexa']}: "
+               f"{STATE['ansi_code']!r} {fgbg}")
 
 
 def usage(quit: bool = False) -> None:

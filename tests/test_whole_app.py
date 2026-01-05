@@ -32,6 +32,13 @@ def test_integration_full(monkeypatch, capsys):
     # symulujemy brak argumentów w CLI
     monkeypatch.setattr(sys, "argv", ["termcolors"])
 
+    clipboard_content = {}
+
+    def fake_copy(value):
+        clipboard_content['last'] = value
+
+    monkeypatch.setattr("termcolors.cli.pyperclip.copy", fake_copy)
+
     # losowy kolor RGB
     r, g, b = sample(range(0, 256), 3)
 
@@ -40,7 +47,6 @@ def test_integration_full(monkeypatch, capsys):
     monkeypatch.setattr("builtins.input", lambda: next(inputs))
 
     # schowek (symulacja pyperclip)
-    clipboard_content = {}
     monkeypatch.setattr(cli.pyperclip, "copy",
                         lambda value: clipboard_content.update({"last":
                                                                 value}))
