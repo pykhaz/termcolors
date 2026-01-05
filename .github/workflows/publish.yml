@@ -27,4 +27,4 @@ jobs:
       - name: Publish package
         run: hatch publish
         env:
-          PYPI_TOKEN: ${{ secrets.PYPI_TOKEN }}
+          HATCH_PYPI_TOKEN: ${{ secrets.PYPI_TOKEN }}
