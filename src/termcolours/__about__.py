@@ -1,6 +1,7 @@
 
-__version__ = "0.9.2"
+__version__ = "0.9.3"
 
+# "0.9.3"  # 26-01-05 -- name change → termcolours
 # "0.9.2"  # 26-01-03 -- refactored for integration tests:
 #                      - pytest MUST expect SystemExit; otherwise
 #                        the test will fail. Now `quit()` returns `__QUIT__`,

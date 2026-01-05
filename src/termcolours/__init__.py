@@ -1,4 +1,4 @@
 from pathlib import Path
 
-APPNAME = "termcolors"
+APPNAME = "termcolours"
 ROOTPATH = Path(__file__).resolve().parent.parent.parent

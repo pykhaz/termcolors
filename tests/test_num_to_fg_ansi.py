@@ -1,6 +1,6 @@
 import pytest
 
-from termcolors.lib.m_utils.printing import num_to_fg_ansi
+from termcolours.lib.m_utils.printing import num_to_fg_ansi
 
 
 def test_hex_string_with_hash():

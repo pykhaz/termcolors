@@ -3,7 +3,7 @@ from random import sample
 import sys
 
 from importlib import reload
-from termcolors import cli
+from termcolours import cli
 
 reload(cli)
 ARST = "\033[0m"  # wyłącza wszystkie efekty
@@ -12,7 +12,7 @@ ARST = "\033[0m"  # wyłącza wszystkie efekty
 def test_integration(monkeypatch, capsys):
 
     # symulujemy brak argumentów w CLI
-    monkeypatch.setattr(sys, "argv", ["termcolors"])
+    monkeypatch.setattr(sys, "argv", ["termcolours"])
 
     # for _ in range(10):
     r, g, b = sample(range(0, 256), 3)
@@ -30,14 +30,14 @@ def test_integration(monkeypatch, capsys):
 
 def test_integration_full(monkeypatch, capsys):
     # symulujemy brak argumentów w CLI
-    monkeypatch.setattr(sys, "argv", ["termcolors"])
+    monkeypatch.setattr(sys, "argv", ["termcolours"])
 
     clipboard_content = {}
 
     def fake_copy(value):
         clipboard_content['last'] = value
 
-    monkeypatch.setattr("termcolors.cli.pyperclip.copy", fake_copy)
+    monkeypatch.setattr("termcolours.cli.pyperclip.copy", fake_copy)
 
     # losowy kolor RGB
     r, g, b = sample(range(0, 256), 3)
