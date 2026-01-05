@@ -1,7 +1,5 @@
 # termcolors
 
-[![CI](https://github.com/pykhaz/termcolors/actions/workflows/ci.yml/badge.svg)](https://github.com/pykhaz/termcolors/actions/workflows/ci.yml)
-
 Simple terminal colour chooser and ANSI code generator utility for Linux,
 written in Python.
 
