@@ -20,9 +20,8 @@ path = "src/termcolours/__about__.py"
 termcolours = "termcolours.cli:main"
 
 [tool.hatch.envs.test]
-dependencies = [
-  "pytest",
-]
+dependencies = ["pytest"]
+develop = true
 
 [tool.hatch.envs.test.scripts]
 test = "pytest -v"
