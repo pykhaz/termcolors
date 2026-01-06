@@ -79,7 +79,8 @@ def foritemin(items, message="", start=0, end=None, *, oftype=False, cond="",
     end: int -- iteration to `end`
     oftype: bool -- prints the type of each item, if True
     cond: str -- prints only items containing `cond` string
-                 (`~def foritemin(` for `not containing`, `\` escapes `~`)
+                 (`~def foritemin(` for `not containing`, `⧹` escapes `~`;
+                                  `⧹` -- stands for 'backslash')
     func: function  -- function to perform on each element, default: `print`
     special: bool -- if special members are to be printed
     nrs: bool -- if numbers are to be printed
