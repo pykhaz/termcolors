@@ -1,11 +1,7 @@
 
-<<<<<<< HEAD:src/termcolours/__about__.py
 __version__ = "0.9.3"
 
 # "0.9.3"  # 26-01-05 -- name change → termcolours
-=======
-__version__ = "0.15.4-dev"
-
 # "0.15.4-dev"  # 26-01-04 -- new features (to be implemented):
 #                        - buffer deque + method `_emit` -- collecting output → possibility
 #                          to print to save as a file
@@ -18,7 +14,6 @@ __version__ = "0.15.4-dev"
 #                      - color positional argument (in decm format, e.g. "50;100;150;decm")
 #                      - --raw flat: output without ANSI codes
 #                      - new env. variable: OUTPUT
->>>>>>> dev:src/termcolors/__about__.py
 # "0.9.2"  # 26-01-03 -- refactored for integration tests:
 #                      - pytest MUST expect SystemExit; otherwise
 #                        the test will fail. Now `quit()` returns `__QUIT__`,
