@@ -10,21 +10,21 @@ readme = "README.md"
 requires-python = ">=3.10"
 license = { text = "MIT" }
 authors = [{ name = "pykhaz" }]
-dependencies = ["pyperclip"]
 
-[project.scripts]
-termcolours = "termcolours.cli:main"
+dependencies = [
+    "pyperclip"
+]
 
 [tool.hatch.version]
 path = "src/termcolours/__about__.py"
 
-[tool.hatch.envs.default]
-dependencies = ["pytest>=7.4"]
-develop = true
+[project.scripts]
+termcolours = "termcolours.cli:main"
 
 [tool.hatch.envs.test]
-dependencies = ["pytest>=7.4"]
+# środowisko testowe
+dependencies = [
+    "pytest>=7.0"
+]
 develop = true
-
-[tool.hatch.envs.test.scripts]
-test = "pytest -v"
+scripts = { test = "pytest -v" }
