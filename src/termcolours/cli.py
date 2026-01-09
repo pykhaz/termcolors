@@ -9,7 +9,7 @@ from typing import List, Dict
 
 import pyperclip
 
-from .lib.m_utils.aux import choose_safe_name, foritemin
+from .lib.m_utils.auxiliary import choose_safe_name, foritemin
 from .lib.m_utils.printing import (AORG, ARED, ARST, num_to_bg_ansi,
                                    term_del_line)
 from .lib.palette import list_palettes

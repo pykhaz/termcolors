@@ -1,4 +1,4 @@
-# ./src/termcolors/lib/m_utils/aux.py
+# ./src/termcolors/lib/m_utils/auxiliary.py
 
 from re import search
 from pathlib import Path
