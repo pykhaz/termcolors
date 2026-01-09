@@ -20,6 +20,9 @@ from . import APPNAME, ROOTPATH
 from .__about__ import __version__ as VERSION
 
 FTITLE = __file__.split("/", maxsplit=-1)[-1].split(".", maxsplit=-1)[0]
+YLW = "\033[33m"
+BLD = "\033[1m"
+RST = "\033[0m"
 
 BUFF_MAX = 80
 # BUFF_MAX = 3
@@ -226,14 +229,19 @@ NAMES = {
               'desc': "sets conversion from hexadecimal format"},
         'prct': {'method': "perentage",
               'desc': "sets conversion from percentage format"},
-        'buffer': {'method': "", 'desc': "prints the color buffer"},
-        'clear': {'method': "", 'desc': "clears the color buffer"},
-        'drop': {'method': "", 'desc': "drops the last line from the buffer"},
-        'dump': {'method': "", 'desc': "dumps the buffer to an .ssv file"},
-        'help': {'method': "", 'desc': "prints this message"},
         'palette': {'method': "", 'desc': "generates a named palette"},
-        'take': {'method': "", 'desc': "takes the first line from the buffer"},
-        'quit': {'method': "", 'desc': "exits the application"}
+        'buffer':  {'method': "", 'desc': "prints the color buffer"},
+        'clear':   {'method': "", 'desc': "clears the color buffer"},
+        'drop':    {'method': "", 'desc': "drops the last line from the buffer"},
+        'take':    {'method': "", 'desc': "takes the first line from the buffer"},
+        'dump':    {'method': "", 'desc': "dumps the buffer to an .ssv file"},
+        'help':    {'method': "", 'desc': "prints this message"},
+        'quit':    {'method': "", 'desc': "exits the application"}
+        }
+RANGES = {
+        'decm': "0-255",
+        'hexa': "00-ff",
+        'prct': "0.00-1.00",
         }
 
 
@@ -241,8 +249,8 @@ def ask_for_color() -> str:
 
     loc = f"{APPNAME}::{FTITLE}.ask_for_color"  # !DBG
     method = METHOD['current']
-    ans = get_input(f"Enter a colour code (R;G;B, {NAMES[method]['method']})"
-                    ", command or help")
+    ans = get_input(f"Enter a colour code (R;G;B, {NAMES[method]['method']};"
+                    f" {RANGES[method]}), command or help")
     color = ""
     try:
         if ans.lower() in COMMANDS:
@@ -488,11 +496,19 @@ def usage(quit: bool = False) -> None:
           "when prompted,")
     print("e.g. 'ff;00;00' for red.")
     print("Commands in the interactive mode:")
-    print(f"    - {'/'.join(COPYCOMMAND)} to copy the current "
-          "color to the clipboard \n      (ANSI foreground/background, "
-          "respectively).")
+    # print(f"    - {'/'.join(COPYCOMMAND)} to copy the current "
+    #       "color to the clipboard \n      (ANSI foreground/background, "
+    #       "respectively).")
+    key_len = max(len(key) for key in NAMES) + 1 * 7 + 3  # + 1 *… ← T&E
+    cprintd(f"{key_len = }, {type(key_len) = }",
+            location=f"{APPNAME}::{FTITLE}.usage")
+    for cmd in COPYCOMMAND:
+        command = f"{BLD}{cmd}{RST}:"
+        print(f"    - {command:<{key_len}} to copy the current color "
+              "to the clipboard")
     for key, value in NAMES.items():
-        print(f"    - {key}: {value['desc']}")
+        command = f"{BLD}{key}{RST}:"
+        print(f"    - {command:<{key_len}} {value['desc']}")
     if quit and STATE['end']:
         sysexit(0)
     STATE['after_help'] = True
