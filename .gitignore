@@ -1,10 +1,12 @@
 # Byte-compiled / optimized / DLL files
 __pycache__/
+dist/
+build/
+*.egg-info/
 archive/
 venv/
-
+.env
 *.py[cod]
-tmp_*.py[cod]
 *$py.class
 tmp_*
 
@@ -12,4 +14,4 @@ tmp_*
 .DS_Store
 
 # output / cache files
-assets/*.txt
+# assets/*.txt
