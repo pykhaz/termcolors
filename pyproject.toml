@@ -13,6 +13,10 @@ authors = [{ name = "pykhaz" }]
 
 dependencies = ["pyperclip"]
 
+[tool.hatch.envs.default.dependencies]
+python = ">=3.10"
+pytest = "^7.4"
+
 [tool.hatch.version]
 path = "src/termcolours/__about__.py"
 
