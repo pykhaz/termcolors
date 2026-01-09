@@ -18,6 +18,16 @@ path = "src/termcolours/__about__.py"
 [project.scripts]
 termcolours = "termcolours.cli:main"
 
+[tool.hatch.build.targets.wheel]
+# Wskazujemy, gdzie znajduje się kod źródłowy
+packages = ["src/termcolours"]
+
+[tool.hatch.build.targets.sdist]
+# Możesz jawnie dołączyć folder, nawet jeśli nie jest w src (choć niezalecane)
+include = [
+    "/assets",
+]
+
 # Hatch environments (typy i testy)
 [tool.hatch.envs.types.scripts]
 test = "pytest {args:tests}"

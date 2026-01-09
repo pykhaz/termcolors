@@ -3,6 +3,7 @@ from collections import deque
 from sys import argv, stdout
 from datetime import datetime
 from functools import partial
+from importlib import resources
 from pathlib import Path
 from sys import exit as sysexit
 from typing import List, Dict
@@ -20,6 +21,8 @@ from . import APPNAME, ROOTPATH
 from .__about__ import __version__ as VERSION
 
 FTITLE = __file__.split("/", maxsplit=-1)[-1].split(".", maxsplit=-1)[0]
+ASSETS_RSC = resources.files(f"{APPNAME}.assets")
+cprintd(f"{ASSETS_RSC = }", location=f"{APPNAME}::{FTITLE}")
 YLW = "\033[33m"
 BLD = "\033[1m"
 RST = "\033[0m"
@@ -291,9 +294,13 @@ def palette() -> None:
 
     loc = f"{APPNAME}::{FTITLE}.palette"  # !DBG
     palettes = list_palettes()
+    if len(palettes) == 0:
+        print("No palettes found")
+        return
     cnt = 0
     lines = []
     line = ""
+    i = 0
     for i, palette in enumerate(sorted(palettes)):
         if len(line + f"{palette!r} | ") < 79:
             line += f"{palette!r} | "
@@ -314,6 +321,7 @@ def palette() -> None:
     STATE['lines_to_del'] = cnt + 2
     log(f"about to delete {STATE['lines_to_del']} lines", "palette")
     del_lines("palette")
+    cprintd(f"{palettes = }", location=loc)
     print(f"palette: {palette_name}")
     batch_conversion(palettes[palette_name], once=False)
     STATE['palette'] = (True, palette_name)
